@@ -2,15 +2,16 @@ package util
 
 import (
 	"github.com/cristalhq/jwt/v4"
+	"github.com/google/uuid"
 	"github.com/rafacteixeira/calendario-medico-api/settings"
 	"time"
 )
 
-var key = []byte(settings.TokenSecretSeed())
+var GetTokenSecret = settings.TokenSecretSeed
 var GetTokenExpirationFunc = getTokenExpiration
 
 func GenerateToken(login string) (string, error) {
-	signer, err := jwt.NewSignerHS(jwt.HS256, key)
+	signer, err := jwt.NewSignerHS(jwt.HS256, []byte(GetTokenSecret()))
 
 	if err != nil {
 		return "", err
@@ -21,7 +22,7 @@ func GenerateToken(login string) (string, error) {
 	claims := &UserClaims{
 		RegisteredClaims: jwt.RegisteredClaims{
 			Audience: []string{"admin"},
-			ID:       "random-unique-string",
+			ID:       uuid.New().String(),
 			ExpiresAt: &jwt.NumericDate{
 				Time: expiresAt,
 			},
@@ -44,8 +45,7 @@ func getTokenExpiration() time.Time {
 
 func ValidateAdminToken(tokenStr string) (bool, error) {
 
-	key := []byte(settings.TokenSecretSeed())
-	verifier, verifierError := jwt.NewVerifierHS(jwt.HS256, key)
+	verifier, verifierError := jwt.NewVerifierHS(jwt.HS256, []byte(GetTokenSecret()))
 	if verifierError != nil {
 		return false, verifierError
 	}

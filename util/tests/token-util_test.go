@@ -9,6 +9,10 @@ import (
 
 func TestIfAValidTokenIsConsideredValid(t *testing.T) {
 
+	util.GetTokenSecret = func() string {
+		return "test"
+	}
+
 	token, _ := util.GenerateToken("rafael")
 	valid, _ := util.ValidateAdminToken(token)
 
@@ -17,6 +21,10 @@ func TestIfAValidTokenIsConsideredValid(t *testing.T) {
 
 func TestIfAnInvalidTokenIsConsideredInvalid(t *testing.T) {
 
+	util.GetTokenSecret = func() string {
+		return "test"
+	}
+
 	token, _ := util.GenerateToken("rafael")
 	valid, _ := util.ValidateAdminToken(token + "a")
 
@@ -24,6 +32,10 @@ func TestIfAnInvalidTokenIsConsideredInvalid(t *testing.T) {
 }
 
 func TestIfAnExpiredTokenIsConsideredInvalid(t *testing.T) {
+
+	util.GetTokenSecret = func() string {
+		return "test"
+	}
 
 	util.GetTokenExpirationFunc = func() time.Time {
 		return time.Now().Add(time.Second * 1)
