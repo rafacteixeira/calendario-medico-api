@@ -12,6 +12,7 @@ import (
 var GetTokenSecret = settings.TokenSecretSeed
 var GetTokenExpirationFunc = getTokenExpiration
 var GetUserWithRoles = database.FindUserWithRoles
+var GetUserByLogin = database.FindUser
 
 func GenerateToken(login string) (string, error) {
 	signer, err := jwt.NewSignerHS(jwt.HS256, []byte(GetTokenSecret()))
@@ -45,7 +46,7 @@ func GenerateToken(login string) (string, error) {
 }
 
 func getTokenExpiration() time.Time {
-	return time.Now().Add(time.Hour * time.Duration(1))
+	return time.Now().Add(time.Hour * 24 * time.Duration(30))
 }
 
 func ValidateToken(tokenStr string) (bool, error, UserClaims) {
@@ -101,4 +102,9 @@ func (claims UserClaims) HasRole(roleToCheck string) bool {
 		}
 	}
 	return false
+}
+
+func RetrieveUserFromToken(token string) uint {
+	_, _, claims := ValidateToken(token)
+	return claims.UserID
 }

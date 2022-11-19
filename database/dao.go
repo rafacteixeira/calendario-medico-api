@@ -14,6 +14,12 @@ func FindUserWithRoles(login string) model.User {
 	return obj
 }
 
+func FindUserWithEventsAndNotes(id uint) model.User {
+	var obj model.User
+	DB.Preload("Events").Preload("Notes").Where("id = ?", id).First(&obj)
+	return obj
+}
+
 func CreateUser(u *model.User) {
 	DB.Create(&u)
 }
@@ -24,4 +30,12 @@ func FindAdminRole() model.Role {
 	}
 	DB.FirstOrCreate(&adminRole)
 	return adminRole
+}
+
+func CreateEvent(event model.Event) {
+	DB.Create(&event)
+}
+
+func CreateNote(note model.Note) {
+	DB.Create(&note)
 }

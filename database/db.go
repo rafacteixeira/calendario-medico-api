@@ -55,7 +55,7 @@ func createDbStructure() {
 		&model.User{},
 		&model.Role{},
 		&model.Note{},
-		&model.CalendarItem{},
+		&model.Event{},
 	)
 
 	if err != nil {
