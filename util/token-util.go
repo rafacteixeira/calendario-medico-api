@@ -3,12 +3,15 @@ package util
 import (
 	"github.com/cristalhq/jwt/v4"
 	"github.com/google/uuid"
+	"github.com/rafacteixeira/calendario-medico-api/database"
+	"github.com/rafacteixeira/calendario-medico-api/model"
 	"github.com/rafacteixeira/calendario-medico-api/settings"
 	"time"
 )
 
 var GetTokenSecret = settings.TokenSecretSeed
 var GetTokenExpirationFunc = getTokenExpiration
+var GetUserWithRoles = database.FindUserWithRoles
 
 func GenerateToken(login string) (string, error) {
 	signer, err := jwt.NewSignerHS(jwt.HS256, []byte(GetTokenSecret()))
@@ -18,7 +21,8 @@ func GenerateToken(login string) (string, error) {
 	}
 
 	expiresAt := GetTokenExpirationFunc()
-
+	user := GetUserWithRoles(login)
+	//TODO: colocar roles no token. colocar quando ele foi gerado
 	claims := &UserClaims{
 		RegisteredClaims: jwt.RegisteredClaims{
 			Audience: []string{"admin"},
@@ -27,9 +31,10 @@ func GenerateToken(login string) (string, error) {
 				Time: expiresAt,
 			},
 		},
-		Login: login,
+		UserLogin: user.Login,
+		UserID:    user.ID,
+		UserRoles: user.Roles,
 	}
-
 	builder := jwt.NewBuilder(signer)
 	token, err := builder.Build(claims)
 	if err != nil {
@@ -43,7 +48,28 @@ func getTokenExpiration() time.Time {
 	return time.Now().Add(time.Hour * time.Duration(1))
 }
 
-func ValidateAdminToken(tokenStr string) (bool, error) {
+func ValidateToken(tokenStr string) (bool, error, UserClaims) {
+
+	verifier, verifierError := jwt.NewVerifierHS(jwt.HS256, []byte(GetTokenSecret()))
+	if verifierError != nil {
+		return false, verifierError, UserClaims{}
+	}
+
+	tokenBytes := []byte(tokenStr)
+
+	var newClaims UserClaims
+	parseClaimsError := jwt.ParseClaims(tokenBytes, verifier, &newClaims)
+	if parseClaimsError != nil {
+		return false, parseClaimsError, newClaims
+	}
+
+	verifyAudience := newClaims.IsForAudience("admin")
+	verifyExpiration := newClaims.IsValidAt(time.Now())
+
+	return verifyAudience && verifyExpiration, nil, newClaims
+}
+
+func ValidateRole(tokenStr string, role string) (bool, error) {
 
 	verifier, verifierError := jwt.NewVerifierHS(jwt.HS256, []byte(GetTokenSecret()))
 	if verifierError != nil {
@@ -52,19 +78,27 @@ func ValidateAdminToken(tokenStr string) (bool, error) {
 
 	tokenBytes := []byte(tokenStr)
 
-	var newClaims jwt.RegisteredClaims
+	var newClaims UserClaims
 	parseClaimsError := jwt.ParseClaims(tokenBytes, verifier, &newClaims)
 	if parseClaimsError != nil {
 		return false, parseClaimsError
 	}
 
-	verifyAdmin := newClaims.IsForAudience("admin")
-	verifyExpiration := newClaims.IsValidAt(time.Now())
-
-	return verifyAdmin && verifyExpiration, nil
+	return newClaims.HasRole(role), nil
 }
 
 type UserClaims struct {
 	jwt.RegisteredClaims
-	Login string
+	UserLogin string
+	UserID    uint
+	UserRoles []model.Role
+}
+
+func (claims UserClaims) HasRole(roleToCheck string) bool {
+	for _, role := range claims.UserRoles {
+		if role.Name == roleToCheck {
+			return true
+		}
+	}
+	return false
 }

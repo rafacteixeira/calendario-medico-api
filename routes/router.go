@@ -2,15 +2,14 @@ package routes
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/rafacteixeira/calendario-medico-api/controller"
 	"github.com/rafacteixeira/calendario-medico-api/middleware"
+	"github.com/rafacteixeira/calendario-medico-api/settings"
 )
 
 func StartServer() {
 	r := gin.Default()
 	r.Use(middleware.Cors())
-
-	// Set a lower memory limit for multipart forms (default is 32 MiB)
-	r.MaxMultipartMemory = 8 << 20 // 8 MiB
 
 	addRoutes(r)
 
@@ -21,10 +20,12 @@ func StartServer() {
 }
 
 func addRoutes(r *gin.Engine) {
-	//r.POST("/signup", controller.SignUp)
-	//r.POST("/signin", controller.SignIn)
+	r.POST("/signup", controller.SignUp)
+	r.POST("/signin", controller.SignIn)
+	r.GET("/checktoken", controller.CheckToken)
 
 	private := r.Group("/private")
-	private.Use(middleware.TokenAuthMiddleware())
+	private.Use(middleware.TokenValidationMiddleware())
+	private.Use(middleware.RoleValidationMiddleware(settings.AdminRole))
 
 }

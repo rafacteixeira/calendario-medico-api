@@ -53,13 +53,6 @@ func TestSignUpWithNewUserShouldntReturnError(t *testing.T) {
 		}
 	}
 
-	services.FindAdminRole = func() model.Role {
-		return model.Role{
-			ID:   1,
-			Name: "admin",
-		}
-	}
-
 	services.CreateUser = func(user *model.User) {
 
 	}

@@ -1,6 +1,7 @@
 package utiltests
 
 import (
+	"github.com/rafacteixeira/calendario-medico-api/model"
 	"github.com/rafacteixeira/calendario-medico-api/util"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -13,8 +14,12 @@ func TestIfAValidTokenIsConsideredValid(t *testing.T) {
 		return "test"
 	}
 
+	util.GetUserWithRoles = func(login string) model.User {
+		return model.User{}
+	}
+
 	token, _ := util.GenerateToken("rafael")
-	valid, _ := util.ValidateAdminToken(token)
+	valid, _, _ := util.ValidateToken(token)
 
 	assert.Equal(t, true, valid, "Should be valid")
 }
@@ -26,7 +31,7 @@ func TestIfAnInvalidTokenIsConsideredInvalid(t *testing.T) {
 	}
 
 	token, _ := util.GenerateToken("rafael")
-	valid, _ := util.ValidateAdminToken(token + "a")
+	valid, _, _ := util.ValidateToken(token + "a")
 
 	assert.Equal(t, false, valid, "Should be invalid")
 }
@@ -43,7 +48,7 @@ func TestIfAnExpiredTokenIsConsideredInvalid(t *testing.T) {
 
 	token, _ := util.GenerateToken("rafael")
 	time.Sleep(time.Second * 2)
-	valid, _ := util.ValidateAdminToken(token)
+	valid, _, _ := util.ValidateToken(token)
 
 	assert.Equal(t, false, valid, "Should be invalid")
 }

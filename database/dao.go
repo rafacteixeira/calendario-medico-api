@@ -8,6 +8,12 @@ func FindUser(login string) model.User {
 	return obj
 }
 
+func FindUserWithRoles(login string) model.User {
+	var obj model.User
+	DB.Preload("Roles").Where("login = ?", login).First(&obj)
+	return obj
+}
+
 func CreateUser(u *model.User) {
 	DB.Create(&u)
 }

@@ -9,7 +9,6 @@ import (
 var (
 	FindUserByLogin  = database.FindUser
 	CreateUser       = database.CreateUser
-	FindAdminRole    = database.FindAdminRole
 	ValidatePassword = util.Validate
 	GenerateToken    = util.GenerateToken
 )
@@ -30,7 +29,6 @@ func SignUp(request util.AuthRequest) error {
 
 		user.Login = request.Login
 		user.Password = encryptedPassword
-		user.Roles = append(user.Roles, FindAdminRole()) //everybody is admin for now
 		CreateUser(&user)
 	} else {
 		return errors.New("Invalid User/Password combination!")
@@ -61,5 +59,11 @@ func SignIn(request util.AuthRequest) (string, error) {
 	} else {
 		return "", errors.New("Invalid User/Password combination!")
 	}
+
+}
+
+func CheckToken(token string) (util.UserClaims, error) {
+	_, err, claims := util.ValidateToken(token)
+	return claims, err
 
 }

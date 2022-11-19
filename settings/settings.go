@@ -10,6 +10,7 @@ const dbUser string = "DB_USER"
 const dbPwd string = "DB_PASSWORD"
 const dbName string = "DB_NAME"
 const tokenSecretSeed string = "TOKEN_SECRET_SEED"
+const AdminRole string = "admin"
 
 func LoadEnv() {
 	viper.AutomaticEnv()

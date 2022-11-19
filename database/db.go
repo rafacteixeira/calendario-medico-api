@@ -2,6 +2,7 @@ package database
 
 import (
 	"fmt"
+	"github.com/rafacteixeira/calendario-medico-api/model"
 	"github.com/rafacteixeira/calendario-medico-api/settings"
 
 	"gorm.io/gorm/logger"
@@ -50,7 +51,12 @@ func dbConnect(user string, pwd string, host string, port int, schema string) {
 }
 
 func createDbStructure() {
-	err := DB.AutoMigrate()
+	err := DB.AutoMigrate(
+		&model.User{},
+		&model.Role{},
+		&model.Note{},
+		&model.CalendarItem{},
+	)
 
 	if err != nil {
 		log.Panic("Erro ao construir tabelas")
