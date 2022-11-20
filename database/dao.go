@@ -60,6 +60,6 @@ func FindEventsByUser(userId uint) []model.Event {
 
 func FindNotesByUser(userId uint) []model.Note {
 	var notes []model.Note
-	DB.Where("user_id = ?", userId).Find(&notes)
+	DB.Where("user_id = ?", userId).Order("date").Find(&notes)
 	return notes
 }
