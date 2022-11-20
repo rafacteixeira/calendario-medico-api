@@ -26,7 +26,9 @@ func SaveAllEvents(c *gin.Context) {
 				Message: err.Error(),
 			})
 		} else {
-			c.Status(http.StatusOK)
+			c.JSON(http.StatusOK, gin.H{
+				"Message": "success",
+			})
 		}
 	}
 }
@@ -45,7 +47,9 @@ func SaveAllNotes(c *gin.Context) {
 				Message: err.Error(),
 			})
 		} else {
-			c.Status(http.StatusOK)
+			c.JSON(http.StatusOK, gin.H{
+				"Message": "success",
+			})
 		}
 	}
 }

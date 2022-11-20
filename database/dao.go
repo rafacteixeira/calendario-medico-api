@@ -33,11 +33,11 @@ func FindAdminRole() model.Role {
 }
 
 func CreateEvent(event model.Event) {
-	DB.Create(&event)
+	DB.Where(event).FirstOrCreate(&event)
 }
 
 func CreateNote(note model.Note) {
-	DB.Create(&note)
+	DB.Where(note).FirstOrCreate(&note)
 }
 
 func CreateToken(t model.Token) {
