@@ -28,9 +28,11 @@ func addRoutes(r *gin.Engine) {
 	private := r.Group("/private")
 	private.Use(middleware.TokenValidationMiddleware())
 	private.Use(middleware.RoleValidationMiddleware(settings.AdminRole))
-	private.POST("/event/save", controller.SaveAllEvents)
-	private.POST("/note/save", controller.SaveAllNotes)
-	private.GET("/all/list", controller.GetEventsAndNotesByUser)
+
+	private.GET("/event", controller.ListEvents)
+	private.GET("/note", controller.ListNotes)
 	private.POST("/event", controller.AddEvent)
 	private.POST("/note", controller.AddNote)
+	private.DELETE("/event", controller.DeleteEvent)
+	private.DELETE("/note", controller.DeleteNote)
 }

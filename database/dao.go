@@ -14,30 +14,20 @@ func FindUserWithRoles(login string) model.User {
 	return obj
 }
 
-func FindUserWithEventsAndNotes(id uint) model.User {
-	var obj model.User
-	DB.Preload("Events").Preload("Notes").Where("id = ?", id).First(&obj)
-	return obj
-}
-
 func CreateUser(u *model.User) {
 	DB.Create(&u)
 }
 
-func FindAdminRole() model.Role {
-	adminRole := model.Role{
-		Name: "admin",
-	}
-	DB.FirstOrCreate(&adminRole)
-	return adminRole
+func CreateEvent(event model.Event) model.Event {
+	dbObj := model.Event{}
+	DB.Where(event).FirstOrCreate(&dbObj)
+	return dbObj
 }
 
-func CreateEvent(event model.Event) {
-	DB.Where(event).FirstOrCreate(&event)
-}
-
-func CreateNote(note model.Note) {
-	DB.Where(note).FirstOrCreate(&note)
+func CreateNote(note model.Note) model.Note {
+	dbObj := model.Note{}
+	DB.Where(note).FirstOrCreate(&dbObj)
+	return dbObj
 }
 
 func CreateToken(t model.Token) {
@@ -52,4 +42,24 @@ func FindToken(jti string) model.Token {
 
 func DeleteToken(jti string) {
 	DB.Where("jti = ?", jti).Delete(&model.Token{})
+}
+
+func DeleteEvent(e model.Event) {
+	DB.Where(e).Delete(&model.Event{})
+}
+
+func DeleteNote(n model.Note) {
+	DB.Where(n).Delete(&model.Note{})
+}
+
+func FindEventsByUser(userId uint) []model.Event {
+	var events []model.Event
+	DB.Where("user_id = ?", userId).Find(&events)
+	return events
+}
+
+func FindNotesByUser(userId uint) []model.Note {
+	var notes []model.Note
+	DB.Where("user_id = ?", userId).Find(&notes)
+	return notes
 }

@@ -3,69 +3,24 @@ package services
 import (
 	"github.com/rafacteixeira/calendario-medico-api/database"
 	"github.com/rafacteixeira/calendario-medico-api/model"
-	"github.com/rafacteixeira/calendario-medico-api/util"
 )
 
 var CreateEvent = database.CreateEvent
 var CreateNote = database.CreateNote
-var FindUserWithEventsAndNotes = database.FindUserWithEventsAndNotes
+var DeleteEvent = database.DeleteEvent
+var DeleteNote = database.DeleteNote
+var FindEventsByUser = database.FindEventsByUser
+var FindNotesByUser = database.FindNotesByUser
 
-func SaveAllEvents(request util.EventsAndNotes, userID uint) error {
-
-	events := request.Events
-	saveEvents(events, userID)
-
-	return nil
-}
-
-func SaveAllNotes(request util.EventsAndNotes, userID uint) error {
-
-	notes := request.Notes
-	saveNotes(notes, userID)
-
-	return nil
-}
-
-func GetEventsAndNotesByUser(userID uint) util.EventsAndNotes {
-
-	user := FindUserWithEventsAndNotes(userID)
-
-	response := util.EventsAndNotes{
-		Events: []model.Event{},
-		Notes:  []model.Note{},
-	}
-
-	for _, event := range user.Events {
-		response.Events = append(response.Events, event)
-	}
-
-	for _, note := range user.Notes {
-		response.Notes = append(response.Notes, note)
-	}
-
-	return response
-}
-
-func saveEvents(events []model.Event, userID uint) {
-	for _, event := range events {
-		saveEvent(event, userID)
-	}
-}
-
-func saveNotes(notes []model.Note, userID uint) {
-	for _, note := range notes {
-		saveNote(note, userID)
-	}
-}
-
-func saveEvent(event model.Event, userID uint) {
+func saveEvent(event model.Event, userID uint) model.Event {
 	dbEvent := model.Event{
 		Date:       event.Date,
 		EventType:  event.EventType,
 		EventWatch: event.EventWatch,
 		UserID:     userID,
 	}
-	CreateEvent(dbEvent)
+	dbEvent = CreateEvent(dbEvent)
+	return dbEvent
 }
 
 func saveNote(note model.Note, userID uint) model.Note {
@@ -74,12 +29,13 @@ func saveNote(note model.Note, userID uint) model.Note {
 		Note:   note.Note,
 		UserID: userID,
 	}
-	CreateNote(dbNote)
+	dbNote = CreateNote(dbNote)
 	return dbNote
 }
 
-func SaveEvent(request model.Event, userID uint) {
-	saveEvent(request, userID)
+func SaveEvent(request model.Event, userID uint) model.Event {
+	saved := saveEvent(request, userID)
+	return saved
 }
 
 func SaveNote(request model.Note, userID uint) model.Note {
@@ -87,5 +43,20 @@ func SaveNote(request model.Note, userID uint) model.Note {
 	return saved
 }
 
-func DeleteEvent(eventID uint, userID uint) {
+func RemoveEvent(event model.Event, userID uint) {
+	event.UserID = userID
+	DeleteEvent(event)
+}
+
+func RemoveNote(note model.Note, userID uint) {
+	note.UserID = userID
+	DeleteNote(note)
+}
+
+func ListEvents(userID uint) []model.Event {
+	return FindEventsByUser(userID)
+}
+
+func ListNotes(userID uint) []model.Note {
+	return FindNotesByUser(userID)
 }
