@@ -39,3 +39,17 @@ func CreateEvent(event model.Event) {
 func CreateNote(note model.Note) {
 	DB.Create(&note)
 }
+
+func CreateToken(t model.Token) {
+	DB.Create(&t)
+}
+
+func FindToken(jti string) model.Token {
+	token := model.Token{}
+	DB.Where("jti = ?", jti).Find(&token)
+	return token
+}
+
+func DeleteToken(jti string) {
+	DB.Where("jti = ?", jti).Delete(&model.Token{})
+}

@@ -11,6 +11,7 @@ var (
 	CreateUser       = database.CreateUser
 	ValidatePassword = util.Validate
 	GenerateToken    = util.GenerateToken
+	RemoveToken      = util.RemoveToken
 )
 
 func SignUp(request util.AuthRequest) error {
@@ -62,8 +63,8 @@ func SignIn(request util.AuthRequest) (string, error) {
 
 }
 
-func CheckToken(token string) (util.UserClaims, error) {
-	_, err, claims := util.ValidateToken(token)
-	return claims, err
+func CheckToken(token string) bool {
+	valid, _, _ := util.ValidateToken(token)
+	return valid
 
 }

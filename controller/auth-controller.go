@@ -47,14 +47,15 @@ func CheckToken(c *gin.Context) {
 	if token == "" {
 		c.Status(http.StatusBadRequest)
 	} else {
-		tokenClaims, err := services.CheckToken(token)
-		if err != nil {
-			c.JSON(http.StatusForbidden, util.AuthError{
-				Error:   "Error Validating Token",
-				Message: err.Error(),
-			})
-		} else {
-			c.JSON(http.StatusOK, tokenClaims)
-		}
+		valid := services.CheckToken(token)
+		c.JSON(http.StatusOK, gin.H{
+			"Valid": valid,
+		})
 	}
+}
+
+func LogOut(c *gin.Context) {
+	token := c.Query("token")
+	services.RemoveToken(token)
+	c.String(http.StatusOK, "Token deletado")
 }

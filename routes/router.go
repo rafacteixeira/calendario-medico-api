@@ -23,6 +23,7 @@ func addRoutes(r *gin.Engine) {
 	r.POST("/signup", controller.SignUp)
 	r.POST("/signin", controller.SignIn)
 	r.GET("/checktoken", controller.CheckToken)
+	r.POST("/logout", controller.LogOut)
 
 	private := r.Group("/private")
 	private.Use(middleware.TokenValidationMiddleware())

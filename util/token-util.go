@@ -12,7 +12,9 @@ import (
 var GetTokenSecret = settings.TokenSecretSeed
 var GetTokenExpirationFunc = getTokenExpiration
 var GetUserWithRoles = database.FindUserWithRoles
-var GetUserByLogin = database.FindUser
+var SaveTokenInfo = database.CreateToken
+var GetTokenInfo = database.FindToken
+var DeleteToken = database.DeleteToken
 
 func GenerateToken(login string) (string, error) {
 	signer, err := jwt.NewSignerHS(jwt.HS256, []byte(GetTokenSecret()))
@@ -23,11 +25,12 @@ func GenerateToken(login string) (string, error) {
 
 	expiresAt := GetTokenExpirationFunc()
 	user := GetUserWithRoles(login)
-	//TODO: colocar roles no token. colocar quando ele foi gerado
+
+	jti := uuid.New().String()
 	claims := &UserClaims{
 		RegisteredClaims: jwt.RegisteredClaims{
 			Audience: []string{"admin"},
-			ID:       uuid.New().String(),
+			ID:       jti,
 			ExpiresAt: &jwt.NumericDate{
 				Time: expiresAt,
 			},
@@ -42,7 +45,9 @@ func GenerateToken(login string) (string, error) {
 		return "", err
 	}
 
-	return token.String(), nil
+	tokenStr := token.String()
+	SaveTokenInfo(model.Token{JTI: jti, Token: tokenStr})
+	return tokenStr, nil
 }
 
 func getTokenExpiration() time.Time {
@@ -50,7 +55,6 @@ func getTokenExpiration() time.Time {
 }
 
 func ValidateToken(tokenStr string) (bool, error, UserClaims) {
-
 	verifier, verifierError := jwt.NewVerifierHS(jwt.HS256, []byte(GetTokenSecret()))
 	if verifierError != nil {
 		return false, verifierError, UserClaims{}
@@ -64,10 +68,12 @@ func ValidateToken(tokenStr string) (bool, error, UserClaims) {
 		return false, parseClaimsError, newClaims
 	}
 
+	token := GetTokenInfo(newClaims.ID)
+	verifyExisting := token != model.Token{}
 	verifyAudience := newClaims.IsForAudience("admin")
 	verifyExpiration := newClaims.IsValidAt(time.Now())
 
-	return verifyAudience && verifyExpiration, nil, newClaims
+	return verifyExisting && verifyAudience && verifyExpiration, nil, newClaims
 }
 
 func ValidateRole(tokenStr string, role string) (bool, error) {
@@ -107,4 +113,12 @@ func (claims UserClaims) HasRole(roleToCheck string) bool {
 func RetrieveUserFromToken(token string) uint {
 	_, _, claims := ValidateToken(token)
 	return claims.UserID
+}
+
+func RemoveToken(token string) {
+	verifier, _ := jwt.NewVerifierHS(jwt.HS256, []byte(GetTokenSecret()))
+	tokenBytes := []byte(token)
+	var newClaims UserClaims
+	jwt.ParseClaims(tokenBytes, verifier, &newClaims)
+	DeleteToken(newClaims.ID)
 }

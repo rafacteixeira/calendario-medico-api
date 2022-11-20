@@ -37,3 +37,9 @@ type Note struct {
 type ApiModel interface {
 	User | Role | Note | Event
 }
+
+type Token struct {
+	JTI       string         `gorm:"primarykey"`
+	DeletedAt gorm.DeletedAt `gorm:"index"`
+	Token     string
+}
